@@ -1,0 +1,34 @@
+podTemplate(containers: [
+	containerTemplate(
+		name: 'gradle', image: 'gradle', command: 'sleep', args: '30d'
+		),
+	]) {
+
+	node(POD_LABEL) {
+		stage('Run pipeline against a gradle project') {
+			container('gradle') {
+				stage('Build a gradle project') {
+					git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+					sh '''
+					cd Chapter08/sample1
+					chmod +x gradlew
+					'''
+				}
+			
+				stage("Tests") {
+					if (env.BRANCH_NAME.startsWith("feat")) {
+						try {
+							sh '''
+								cd Chapter08/sample1
+								./gradlew test
+							'''
+						} catch (Exception E) {
+							echo 'Failure detected'
+						}
+					} else {
+					}
+				}
+			}
+		}
+	}
+}
