@@ -31,7 +31,6 @@ pipeline {
 				echo 'Unit test main branch'
 				sh """
 					cd Chapter08/sample1;
-					git branch -v
 					./gradlew test
 					./gradlew jacocoTestCoverageVerification
 				"""
@@ -51,7 +50,6 @@ pipeline {
 				echo 'Unit test not main branch'
 				sh """
 					cd Chapter08/sample1; 
-					git branch -v
 					./gradlew test
 					./gradlew jacocoTestReport
 					./gradlew checkstyleMain
