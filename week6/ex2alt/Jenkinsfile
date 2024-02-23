@@ -16,10 +16,9 @@ pipeline {
 		// From assignment: Create a multibranch pipeline which acts against the repository you created in exercise 5.
 		stage('Checkout code and prepare environment') {
 			steps {
-				git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'master'
+				git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'w5ex3'
 				sh """
 					cd Chapter08/sample1
-					git checkout w5ex3
 					chmod +x gradlew
 				"""
 			}
