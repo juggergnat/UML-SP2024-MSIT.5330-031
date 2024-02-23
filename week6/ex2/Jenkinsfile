@@ -49,7 +49,7 @@ pipeline {
           }
         }
       }
-
+    }
     // From assignment: All other tests from last week should run in the non-main branches.
     //   Ex5.1: test jacocoTestCoverageVerification jacocoTestReport
     //   Ex5.2: test jacocoTestReport checkstyleMain
