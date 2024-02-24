@@ -1,0 +1,184 @@
+Branch indexing
+Connecting to https://api.github.com using jenkins-bot/******
+Obtained week6/ex2alt/Jenkinsfile from 51784206cb9752cbcedd30a5f610d328db852597
+[Pipeline] Start of Pipeline
+[Pipeline] echo
+[WARNING] containerTemplate option is deprecated, use yaml syntax to define containers.
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Created Pod: UML devops-tools/week6-ex6-2-alt-main-1-383z8-hq7n0-h3wxq
+Agent week6-ex6-2-alt-main-1-383z8-hq7n0-h3wxq is provisioned from template Week6-Ex6_2-alt_main_1-383z8-hq7n0
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://jenkins-service.devops-tools.svc.cluster.local:8080/job/Week6-Ex6_2-alt/job/main/1/"
+    runUrl: "job/Week6-Ex6_2-alt/job/main/1/"
+  labels:
+    jenkins: "agent"
+    jenkins/label-digest: "6c0ac0f0042a4a357358ac4bc067787bacdde4e2"
+    jenkins/label: "Week6-Ex6_2-alt_main_1-383z8"
+  name: "week6-ex6-2-alt-main-1-383z8-hq7n0-h3wxq"
+  namespace: "devops-tools"
+spec:
+  containers:
+  - args:
+    - "30d"
+    command:
+    - "sleep"
+    image: "gradle"
+    imagePullPolicy: "IfNotPresent"
+    name: "gradle"
+    resources: {}
+    tty: false
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_AGENT_NAME"
+      value: "week6-ex6-2-alt-main-1-383z8-hq7n0-h3wxq"
+    - name: "JENKINS_NAME"
+      value: "week6-ex6-2-alt-main-1-383z8-hq7n0-h3wxq"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://jenkins-service.devops-tools.svc.cluster.local:8080/"
+    image: "jenkins/inbound-agent:3206.vb_15dcf73f6a_9-2"
+    name: "jnlp"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on week6-ex6-2-alt-main-1-383z8-hq7n0-h3wxq in /home/jenkins/agent/workspace/Week6-Ex6_2-alt_main
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+The recommended git tool is: NONE
+using credential 385d4a65-3179-406f-9fc3-e44bde89855f
+Cloning the remote Git repository
+Cloning with configured refspecs honoured and without tags
+Cloning repository https://github.com/juggergnat/UML-SP2024-MSIT.5330-031.git
+ > git init /home/jenkins/agent/workspace/Week6-Ex6_2-alt_main # timeout=10
+Avoid second fetch
+Checking out Revision 51784206cb9752cbcedd30a5f610d328db852597 (main)
+Fetching upstream changes from https://github.com/juggergnat/UML-SP2024-MSIT.5330-031.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.2'
+using GIT_ASKPASS to set credentials 
+ > git fetch --no-tags --force --progress -- https://github.com/juggergnat/UML-SP2024-MSIT.5330-031.git +refs/heads/main:refs/remotes/origin/main # timeout=10
+ > git config remote.origin.url https://github.com/juggergnat/UML-SP2024-MSIT.5330-031.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/main:refs/remotes/origin/main # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 51784206cb9752cbcedd30a5f610d328db852597 # timeout=10
+Commit message: "Change branch on fork to w6fixed which is fixed repo"
+First time build. Skipping changelog.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] container
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout code and prepare environment)
+[Pipeline] git
+The recommended git tool is: NONE
+No credentials specified
+Warning: JENKINS-30600: special launcher org.csanchez.jenkins.plugins.kubernetes.pipeline.ContainerExecDecorator$1@217e2835; decorates RemoteLauncher[hudson.remoting.Channel@37fe2231:JNLP4-connect connection from 10.1.1.47/10.1.1.47:45072] will be ignored (a typical symptom is the Git executable not being run inside a designated container)
+Fetching changes from the remote Git repository
+Checking out Revision f63e711fb3979db0db09f035a80a1552c0dbb8fa (refs/remotes/origin/w6fixed)
+Commit message: "Update final static int format in Calculator.java"
+First time build. Skipping changelog.
+[Pipeline] sh
+ > git rev-parse --resolve-git-dir /home/jenkins/agent/workspace/Week6-Ex6_2-alt_main/.git # timeout=10
+ > git config remote.origin.url https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git # timeout=10
+Fetching upstream changes from https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.2'
+ > git fetch --tags --force --progress -- https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/w6fixed^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f f63e711fb3979db0db09f035a80a1552c0dbb8fa # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git checkout -b w6fixed f63e711fb3979db0db09f035a80a1552c0dbb8fa # timeout=10
++ cd Chapter08/sample1
++ chmod +x gradlew
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Run pipeline against a gradle project - test MAIN)
+[Pipeline] echo
+Unit test main branch
+[Pipeline] sh
++ cd Chapter08/sample1
++ ./gradlew test
+Downloading https://services.gradle.org/distributions/gradle-4.10.2-bin.zip
+..........................................................................
+
+Welcome to Gradle 4.10.2!
+
+Here are the highlights of this release:
+ - Incremental Java compilation by default
+ - Periodic Gradle caches cleanup
+ - Gradle Kotlin DSL 1.0-RC6
+ - Nested included builds
+ - SNAPSHOT plugin versions in the `plugins {}` block
+
+For more details see https://docs.gradle.org/4.10.2/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :compileJava
+> Task :processResources
+> Task :classes
+> Task :compileTestJava
+> Task :processTestResources
+> Task :testClasses
+> Task :test
+
+BUILD SUCCESSFUL in 53s
+5 actionable tasks: 5 executed
++ ./gradlew jacocoTestCoverageVerification
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jacocoTestCoverageVerification
+
+BUILD SUCCESSFUL in 3s
+3 actionable tasks: 1 executed, 2 up-to-date
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Run pipeline against a gradle project - test branch)
+Stage "Run pipeline against a gradle project - test branch" skipped due to when conditional
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // container
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+
+GitHub has been notified of this commit’s build result
+
+Finished: SUCCESS
