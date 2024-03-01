@@ -44,4 +44,10 @@ pipeline {
       }
     }
   }
+
+  post {
+    always {
+      echo 'pipeline completed, yo'
+    }
+  }
 }
