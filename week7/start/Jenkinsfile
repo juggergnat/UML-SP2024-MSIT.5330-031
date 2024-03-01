@@ -1,0 +1,62 @@
+pipeline {
+  agent {
+    kubernetes {
+      // Define the pod template with container template
+      containerTemplate {
+        name 'gradle'
+        image 'gradle'
+        command 'sleep'
+        args '30d'
+      }
+    }
+  }
+  
+  stages {
+
+    // From assignment: Create a multibranch pipeline which acts against the repository you created in exercise 5.
+    stage('Checkout code and prepare environment') {
+      steps {
+        git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'w6fixed'
+        sh """
+          cd Chapter08/sample1
+          chmod +x gradlew
+        """
+      }
+    }
+
+    // From assignment: The CodeCoverage test should only run on the main branch.
+    stage('Run pipeline against a gradle project - test MAIN') {
+      when { branch 'main' }
+      steps {
+        echo 'Unit test main branch'
+        sh """
+          cd Chapter08/sample1;
+          ./gradlew test
+          ./gradlew jacocoTestCoverageVerification
+        """
+        // From assignment: The pipeline does not need to generate JaCoCo output.
+        // publishHTML ( target: [ reportDir: '', reportFiles: '', reportName: "JaCoCo Report" ] )
+      }
+    }
+
+    // From assignment: All other tests from last week should run in the non-main branches.
+    //  Ex5.1: test jacocoTestCoverageVerification jacocoTestReport
+    //  Ex5.2: test jacocoTestReport checkstyleMain
+    //  Ex5.3: test jacocoTestReport checkstyleMain
+    // From assignment: The CodeCoverage test should only run on the main branch.
+    stage('Run pipeline against a gradle project - test branch') {
+      when { not { branch 'main' } }
+      steps {
+        echo 'Unit test not main branch'
+        sh """
+          cd Chapter08/sample1; 
+          ./gradlew test
+          ./gradlew jacocoTestReport
+          ./gradlew checkstyleMain
+        """
+        // From assignment: The pipeline does not need to generate JaCoCo output.
+        // publishHTML ( target: [ reportDir: '', reportFiles: '', reportName: "JaCoCo Report" ] )
+      }
+    }
+  }
+}
