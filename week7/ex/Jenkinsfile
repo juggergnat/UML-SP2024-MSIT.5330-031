@@ -23,27 +23,6 @@ pipeline {
     }
 
     // From assignment: All other tests should run in the non-main branches.
-    stage('Run pipeline against a gradle project - test branch - Code test') {
-      when {
-        not { branch 'main' }
-      }
-      steps {
-        echo 'Unit test on non-main branch.'
-        sh """
-          cd Chapter08/sample1; 
-          ./gradlew test
-          ./gradlew jacocoTestReport
-        """
-        // From assignment: JaCoCo reports required.
-        publishHTML (target: [
-          reportDir: 'Chapter08/sample1/build/reports/tests/test',
-          reportFiles: 'index.html',
-          reportName: "JaCoCo Report"
-        ])
-      }
-    }
-
-    // From assignment: All other tests should run in the non-main branches.
     stage('Run pipeline against a gradle project - test branch - Code check') {
       when {
         not { branch 'main' }
@@ -72,8 +51,15 @@ pipeline {
         sh """
           cd Chapter08/sample1;
           ./gradlew test
+          ./gradlew jacocoTestReport
           ./gradlew jacocoTestCoverageVerification
         """
+        // From assignment: JaCoCo reports required.
+        publishHTML (target: [
+          reportDir: 'Chapter08/sample1/build/reports/tests/test',
+          reportFiles: 'index.html',
+          reportName: "JaCoCo Report"
+        ])
       }
     }
   }
