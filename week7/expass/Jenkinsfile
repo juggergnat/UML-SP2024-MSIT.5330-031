@@ -1,0 +1,101 @@
+pipeline {
+  agent {
+    kubernetes {
+      // Define the pod template with container template
+      containerTemplate {
+        name 'gradle'
+        image 'gradle'
+        command 'sleep'
+        args '30d'
+      }
+    }
+  }
+  
+  stages {
+    stage('Checkout code and prepare environment') {
+      steps {
+        // master will fail.
+        // git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'master'
+        // w6fixed will pass.
+           git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'w6fixed'
+        sh """
+          cd Chapter08/sample1
+          chmod +x gradlew
+        """
+      }
+    }
+
+    // From assignment: All other tests should run in the non-main branches.
+    stage('Run pipeline against a gradle project - test branch - Code test') {
+      when {
+        not { branch 'main' }
+      }
+      steps {
+        echo 'Unit test on non-main branch.'
+        sh """
+          cd Chapter08/sample1; 
+          ./gradlew test
+          ./gradlew jacocoTestReport
+        """
+        // From assignment: JaCoCo reports required.
+        publishHTML (target: [
+          reportDir: 'Chapter08/sample1/build/reports/tests/test',
+          reportFiles: 'index.html',
+          reportName: "JaCoCo Report"
+        ])
+      }
+    }
+
+    // From assignment: All other tests should run in the non-main branches.
+    stage('Run pipeline against a gradle project - test branch - Code check') {
+      when {
+        not { branch 'main' }
+      }
+      steps {
+        echo 'Static code analysis on non-main branch.'
+        sh """
+          cd Chapter08/sample1; 
+          ./gradlew test
+          ./gradlew checkstyleMain
+        """
+        // From assignment: JaCoCo reports required.
+        publishHTML (target: [
+          reportDir: 'Chapter08/sample1/build/reports/checkstyle',
+          reportFiles: 'main.html',
+          reportName: "JaCoCo Checkstyle"
+        ])
+      }
+    }
+
+    // From assignment: The CodeCoverage test should only run on the main branch.
+    stage('Run pipeline against a gradle project - test MAIN - Code coverage') {
+      when { branch 'main' }
+      steps {
+        echo 'Code coverage test on main branch.'
+        sh """
+          cd Chapter08/sample1;
+          ./gradlew test
+          ./gradlew jacocoTestCoverageVerification
+        """
+      }
+    }
+  }
+
+  post {
+    always {
+      echo 'pipeline completed, yo!'
+    }
+    success {
+      echo 'tests pass!'
+    }
+    failure {
+      echo 'tests fail!'
+    }
+    unstable {
+      echo 'run is unstable!'
+    }
+    changed {
+      echo 'pipeline run changed!'
+    }
+  }
+}
