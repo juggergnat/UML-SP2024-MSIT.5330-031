@@ -14,10 +14,7 @@ pipeline {
   stages {
     stage('Checkout code and prepare environment') {
       steps {
-        // master will fail.
-        // git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'master'
-        // w6fixed will pass.
-           git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'w6fixed'
+        git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'w7'
         sh """
           cd Chapter08/sample1
           chmod +x gradlew
