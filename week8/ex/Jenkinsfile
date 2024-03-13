@@ -38,18 +38,18 @@ pipeline {
           ./gradlew jacocoTestReport
           ./gradlew checkstyleMain
         """
-        post {
-          always {
-            echo 'Generating JaCoCo Checkstyle.'
-            publishHTML (target: [
-              reportDir: 'Chapter08/sample1/build/reports/checkstyle',
-              reportFiles: 'main.html',
-              reportName: "JaCoCo Checkstyle"
-            ])
-          }
-          success { echo 'Checkstyle tests pass!' }
-          failure { echo 'Checkstyle tests fail!' }
-        }
+        //post {
+        //  always {
+        //    echo 'Generating JaCoCo Checkstyle.'
+        //    publishHTML (target: [
+        //      reportDir: 'Chapter08/sample1/build/reports/checkstyle',
+        //      reportFiles: 'main.html',
+        //      reportName: "JaCoCo Checkstyle"
+        //    ])
+        //  }
+        //  success { echo 'Checkstyle tests pass!' }
+        //  failure { echo 'Checkstyle tests fail!' }
+        //}
       }
     }
 
@@ -62,24 +62,35 @@ pipeline {
           cd Chapter08/sample1;
           ./gradlew jacocoTestCoverageVerification
         """
-        post {
-          always {
-            echo 'Generating JaCoCo Report'
-            publishHTML (target: [
-              reportDir: 'Chapter08/sample1/build/reports/tests/test',
-              reportFiles: 'index.html',
-              reportName: "JaCoCo Report"
-            ])
-          }
-          success { echo 'All other tests pass!' }
-          failure { echo 'All other tests fail!' }
-        }
+        //post {
+        //  always {
+        //    echo 'Generating JaCoCo Report'
+        //    publishHTML (target: [
+        //      reportDir: 'Chapter08/sample1/build/reports/tests/test',
+        //      reportFiles: 'index.html',
+        //      reportName: "JaCoCo Report"
+        //    ])
+        //  }
+        //  success { echo 'All other tests pass!' }
+        //  failure { echo 'All other tests fail!' }
+        //}
       }
     }
   }
 
   post {
-    always   { echo 'End: pipeline completed, yo!' }
+    always   {
+      script {
+        if ( env.BRANCH_NAME == 'main' ) {
+          publishHTML (target: [
+              reportDir: 'Chapter08/sample1/build/reports/tests/test',
+              reportFiles: 'index.html',
+              reportName: "JaCoCo Report"
+          ])
+        }
+      }
+      echo 'End: pipeline completed, yo!'
+    }
     success  { echo 'End: tests pass!' }
     failure  { echo 'End: tests fail!' }
     unstable { echo 'End: run is unstable!' }
