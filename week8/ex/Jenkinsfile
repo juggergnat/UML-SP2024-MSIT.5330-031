@@ -22,10 +22,13 @@ pipeline {
       }
     }
 
-    // From assignment: All other tests should run in the non-main branches.
-    stage('Run pipeline against a gradle project - test branch - Code check') { // Move JaCoCo to post.always{}.
+    // From assignment: All other tests should run in the feature and playground branches.
+    stage('Run pipeline against a gradle project - test OTHER - Code check') {
       when {
-        not { branch 'main' }
+        anyOf {
+          branch 'feature'
+          branch 'playground'
+        }
       }
       steps {
         echo 'Static code analysis on non-main branch.'
@@ -53,6 +56,7 @@ pipeline {
 
   post {
     always {
+
       // From assignment: JaCoCo reports required.
       publishHTML (target: [
         reportDir: 'Chapter08/sample1/build/reports/checkstyle',
