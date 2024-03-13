@@ -38,10 +38,10 @@ pipeline {
           ./gradlew jacocoTestReport
           ./gradlew checkstyleMain
         """
-          publishHTML (target: [
-            reportDir: 'Chapter08/sample1/build/reports/tests/test',
-            reportFiles: 'index.html',
-            reportName: "JaCoCo Report for non-main"
+           publishHTML (target: [
+            reportDir: 'Chapter08/sample1/build/reports/checkstyle',
+            reportFiles: 'main.html',
+            reportName: "JaCoCo Checkstyle"
           ])
       }
     }
