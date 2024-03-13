@@ -57,19 +57,21 @@ pipeline {
   post {
     always {
       // Cannot use when in post block. Using if instead.
-      if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
-        publishHTML (target: [
-          reportDir: 'Chapter08/sample1/build/reports/checkstyle',
-          reportFiles: 'main.html',
-          reportName: "JaCoCo Checkstyle"
-        ])
-      }
-      if (env.BRANCH_NAME == 'main') {
-        publishHTML (target: [
-          reportDir: 'Chapter08/sample1/build/reports/tests/test',
-          reportFiles: 'index.html',
-          reportName: "JaCoCo Report"
-        ])
+      script {
+        if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
+          publishHTML (target: [
+            reportDir: 'Chapter08/sample1/build/reports/checkstyle',
+            reportFiles: 'main.html',
+            reportName: "JaCoCo Checkstyle"
+          ])
+        }
+        if (env.BRANCH_NAME == 'main') {
+          publishHTML (target: [
+            reportDir: 'Chapter08/sample1/build/reports/tests/test',
+            reportFiles: 'index.html',
+            reportName: "JaCoCo Report"
+          ])
+        }
       }
       echo 'pipeline completed, yo!'
     }
