@@ -38,11 +38,18 @@ pipeline {
           ./gradlew jacocoTestReport
           ./gradlew checkstyleMain
         """
-           publishHTML (target: [
-            reportDir: 'Chapter08/sample1/build/reports/checkstyle',
-            reportFiles: 'main.html',
-            reportName: "JaCoCo Checkstyle"
-          ])
+        post {
+          always {
+            echo 'Generating JaCoCo Checkstyle.'
+            publishHTML (target: [
+              reportDir: 'Chapter08/sample1/build/reports/checkstyle',
+              reportFiles: 'main.html',
+              reportName: "JaCoCo Checkstyle"
+            ])
+          }
+          success { echo 'Checkstyle tests pass!' }
+          failure { echo 'Checkstyle tests fail!' }
+        }
       }
     }
 
@@ -55,47 +62,27 @@ pipeline {
           cd Chapter08/sample1;
           ./gradlew jacocoTestCoverageVerification
         """
-          publishHTML (target: [
-            reportDir: 'Chapter08/sample1/build/reports/tests/test',
-            reportFiles: 'index.html',
-            reportName: "JaCoCo Report"
-          ])
+        post {
+          always {
+            echo 'Generating JaCoCo Report'
+            publishHTML (target: [
+              reportDir: 'Chapter08/sample1/build/reports/tests/test',
+              reportFiles: 'index.html',
+              reportName: "JaCoCo Report"
+            ])
+          }
+          success { echo 'All other tests pass!' }
+          failure { echo 'All other tests fail!' }
+        }
       }
     }
   }
 
   post {
-    always {
-      // Cannot use when in post block. Using if instead.
-      script {
-        if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
-          // publishHTML (target: [
-          //  reportDir: 'Chapter08/sample1/build/reports/checkstyle',
-          //  reportFiles: 'main.html',
-          //  reportName: "JaCoCo Checkstyle"
-          //])
-        }
-        if (env.BRANCH_NAME == 'main') {
-          //publishHTML (target: [
-          //  reportDir: 'Chapter08/sample1/build/reports/tests/test',
-          //  reportFiles: 'index.html',
-          //  reportName: "JaCoCo Report"
-          //])
-        }
-      }
-      echo 'pipeline completed, yo!'
-    }
-    success {
-      echo 'tests pass!'
-    }
-    failure {
-      echo 'tests fail!'
-    }
-    unstable {
-      echo 'run is unstable!'
-    }
-    changed {
-      echo 'pipeline run changed!'
-    }
+    always   { echo 'End: pipeline completed, yo!' }
+    success  { echo 'End: tests pass!' }
+    failure  { echo 'End: tests fail!' }
+    unstable { echo 'End: run is unstable!' }
+    changed  { echo 'End: pipeline run changed!' }
   }
 }
