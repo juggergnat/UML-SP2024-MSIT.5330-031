@@ -14,7 +14,7 @@ pipeline {
   stages {
     stage('Checkout code and prepare environment') {
       steps {
-        git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git', branch: 'w7'
+        git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
         sh """
           cd Chapter08/sample1
           chmod +x gradlew
@@ -28,7 +28,6 @@ pipeline {
         anyOf {
           branch 'feature'
           branch 'playground'
-          branch 'main' // just to test.
         }
       }
       steps {
@@ -66,8 +65,8 @@ pipeline {
             reportName: "JaCoCo CC Report"
           ])
         }
-        if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground' || env.BRANCH_NAME == 'main') {
-          // Status code analysis test report.
+        if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
+          // Unit test and static code analysis test report.
           publishHTML (target: [
             reportDir: 'Chapter08/sample1/build/reports/checkstyle',
             reportFiles: 'main.html',
