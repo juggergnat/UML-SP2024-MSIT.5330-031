@@ -57,9 +57,12 @@ pipeline {
     stage('Run pipeline against a gradle project - test MAIN - Code coverage') {
       when { branch 'main' }
       steps {
-        echo 'Code coverage test on main branch.'
+        echo 'Code coverage test on main branch. Build 9.'
         sh """
           cd Chapter08/sample1;
+          ./gradlew test
+          ./gradlew jacocoTestReport
+          ./gradlew checkstyleMain
           ./gradlew jacocoTestCoverageVerification
         """
         //post {
@@ -83,9 +86,14 @@ pipeline {
       script {
         if ( env.BRANCH_NAME == 'main' ) {
           publishHTML (target: [
-              reportDir: 'Chapter08/sample1/build/reports/tests/test',
-              reportFiles: 'index.html',
-              reportName: "JaCoCo Report"
+            reportDir: 'Chapter08/sample1/build/reports/tests/test',
+            reportFiles: 'index.html',
+            reportName: "JaCoCo Report"
+          ])
+          publishHTML (target: [
+            reportDir: 'Chapter08/sample1/build/reports/checkstyle',
+            reportFiles: 'main.html',
+            reportName: "JaCoCo Checkstyle"
           ])
         }
       }
