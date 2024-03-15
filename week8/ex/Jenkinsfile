@@ -28,28 +28,16 @@ pipeline {
         anyOf {
           branch 'feature'
           branch 'playground'
+          branch 'main' // just to test.
         }
       }
       steps {
-        echo 'Static code analysis on non-main branch.'
+        echo 'Unit test and static code analysis on non-main branch.'
         sh """
           cd Chapter08/sample1; 
           ./gradlew test
-          ./gradlew jacocoTestReport
           ./gradlew checkstyleMain
         """
-        //post {
-        //  always {
-        //    echo 'Generating JaCoCo Checkstyle.'
-        //    publishHTML (target: [
-        //      reportDir: 'Chapter08/sample1/build/reports/checkstyle',
-        //      reportFiles: 'main.html',
-        //      reportName: "JaCoCo Checkstyle"
-        //    ])
-        //  }
-        //  success { echo 'Checkstyle tests pass!' }
-        //  failure { echo 'Checkstyle tests fail!' }
-        //}
       }
     }
 
@@ -57,26 +45,12 @@ pipeline {
     stage('Run pipeline against a gradle project - test MAIN - Code coverage') {
       when { branch 'main' }
       steps {
-        echo 'Code coverage test on main branch. Build 9.'
+        echo 'Code coverage test on main branch.'
         sh """
           cd Chapter08/sample1;
-          ./gradlew test
           ./gradlew jacocoTestReport
-          ./gradlew checkstyleMain
           ./gradlew jacocoTestCoverageVerification
         """
-        //post {
-        //  always {
-        //    echo 'Generating JaCoCo Report'
-        //    publishHTML (target: [
-        //      reportDir: 'Chapter08/sample1/build/reports/tests/test',
-        //      reportFiles: 'index.html',
-        //      reportName: "JaCoCo Report"
-        //    ])
-        //  }
-        //  success { echo 'All other tests pass!' }
-        //  failure { echo 'All other tests fail!' }
-        //}
       }
     }
   }
@@ -85,11 +59,15 @@ pipeline {
     always   {
       script {
         if ( env.BRANCH_NAME == 'main' ) {
+          // Code coverage test report.
           publishHTML (target: [
             reportDir: 'Chapter08/sample1/build/reports/tests/test',
             reportFiles: 'index.html',
-            reportName: "JaCoCo Report"
+            reportName: "JaCoCo CC Report"
           ])
+        }
+        if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
+          // Status code analysis test report.
           publishHTML (target: [
             reportDir: 'Chapter08/sample1/build/reports/checkstyle',
             reportFiles: 'main.html',
