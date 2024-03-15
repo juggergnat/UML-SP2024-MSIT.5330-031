@@ -77,6 +77,7 @@ pipeline {
     }
     success  {
       script {
+        echo "Post success script: " + env.BRANCH_NAME
         // Container should only create on success (main, feature branch, not playground).
         if ( env.BRANCH_NAME == 'main' ) {
           // repository/calculator:1.0
