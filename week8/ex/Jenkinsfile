@@ -76,12 +76,14 @@ pipeline {
       echo 'End: pipeline completed, yo!'
     }
     success  {
-      // Container should only create on success (main, feature branch, not playground).
-      if ( env.BRANCH_NAME == 'main' ) {
-        // repository/calculator:1.0
-      }
-      if ( env.BRANCH_NAME == 'feature' ) {
-        // repository/calculator-feature:0.1
+      script {
+        // Container should only create on success (main, feature branch, not playground).
+        if ( env.BRANCH_NAME == 'main' ) {
+          // repository/calculator:1.0
+        }
+        if ( env.BRANCH_NAME == 'feature' ) {
+          // repository/calculator-feature:0.1
+        }
       }
       echo 'End: tests pass!'
     }
