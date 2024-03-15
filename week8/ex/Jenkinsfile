@@ -57,21 +57,22 @@ pipeline {
   post {
     always   {
       script {
+        echo "Post always script: " + env.BRANCH_NAME
         if ( env.BRANCH_NAME == 'main' ) {
           // Code coverage test report.
-          publishHTML (target: [
-            reportDir: 'Chapter08/sample1/build/reports/tests/test',
-            reportFiles: 'index.html',
-            reportName: "JaCoCo CC Report"
-          ])
+          // publishHTML (target: [
+          //   reportDir: 'Chapter08/sample1/build/reports/tests/test',
+          //   reportFiles: 'index.html',
+          //   reportName: "JaCoCo CC Report"
+          // ])
         }
         if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
           // Unit test and static code analysis test report.
-          publishHTML (target: [
-            reportDir: 'Chapter08/sample1/build/reports/checkstyle',
-            reportFiles: 'main.html',
-            reportName: "JaCoCo Checkstyle"
-          ])
+          // publishHTML (target: [
+          //   reportDir: 'Chapter08/sample1/build/reports/checkstyle',
+          //   reportFiles: 'main.html',
+          //   reportName: "JaCoCo Checkstyle"
+          // ])
         }
       }
       echo 'End: pipeline completed, yo!'
