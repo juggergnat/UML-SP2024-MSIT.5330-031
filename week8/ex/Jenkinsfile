@@ -21,7 +21,18 @@ pipeline {
         """
       }
     }
-
+    // From assignment: The CodeCoverage test should only run on the main branch.
+    stage('Run pipeline against a gradle project - test MAIN - Code coverage') {
+      when { branch 'main' }
+      steps {
+        echo 'Code coverage test on main branch.'
+        sh """
+          cd Chapter08/sample1;
+          ./gradlew jacocoTestReport
+          ./gradlew jacocoTestCoverageVerification
+        """
+      }
+    }
     // From assignment: All other tests should run in the feature and playground branches.
     stage('Run pipeline against a gradle project - test OTHER - Code check') {
       when {
@@ -36,19 +47,6 @@ pipeline {
           cd Chapter08/sample1; 
           ./gradlew test
           ./gradlew checkstyleMain
-        """
-      }
-    }
-
-    // From assignment: The CodeCoverage test should only run on the main branch.
-    stage('Run pipeline against a gradle project - test MAIN - Code coverage') {
-      when { branch 'main' }
-      steps {
-        echo 'Code coverage test on main branch.'
-        sh """
-          cd Chapter08/sample1;
-          ./gradlew jacocoTestReport
-          ./gradlew jacocoTestCoverageVerification
         """
       }
     }
@@ -77,7 +75,16 @@ pipeline {
       }
       echo 'End: pipeline completed, yo!'
     }
-    success  { echo 'End: tests pass!' }
+    success  {
+      // Container should only create on success (main, feature branch, not playground).
+      if ( env.BRANCH_NAME == 'main' ) {
+        // repository/calculator:1.0
+      }
+      if ( env.BRANCH_NAME == 'feature' ) {
+        // repository/calculator-feature:0.1
+      }
+      echo 'End: tests pass!'
+    }
     failure  { echo 'End: tests fail!' }
     unstable { echo 'End: run is unstable!' }
     changed  { echo 'End: pipeline run changed!' }
