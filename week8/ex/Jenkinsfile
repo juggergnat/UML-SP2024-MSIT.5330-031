@@ -138,7 +138,7 @@ pipeline {
         }
       }
       echo 'End: tests pass!'
-      echo 'End: ' + ${CONTAINER_NAME}
+      echo 'End: ' + "${CONTAINER_NAME}"
 /*
       stages {
         stage('Build a gradle project') {
