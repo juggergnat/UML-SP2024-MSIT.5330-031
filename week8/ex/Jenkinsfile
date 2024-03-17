@@ -133,7 +133,7 @@ pipeline {
         if ( "${CONTAINER_NAME}" ) {
           // echo "Create container ${CONTAINER_REPO}/${CONTAINER_NAME}."
           // echo "QUESTION: Where does ${CONTAINER_REPO}/${CONTAINER_NAME} go?"
-          container("gradle/${CONTAINER_NAME}") {
+          container('gradle') {
             sh '''
               cd Chapter08/sample1
               sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
