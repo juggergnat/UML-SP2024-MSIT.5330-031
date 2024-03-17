@@ -138,7 +138,7 @@ pipeline {
         }
       }
       echo 'End: tests pass!'
-      if ( 1 = 1 ) {
+      if ( 1 ) {
         echo 'End: ' + "${CONTAINER_NAME}"
       }
 /*
