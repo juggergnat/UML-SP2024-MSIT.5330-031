@@ -43,7 +43,6 @@ pipeline {
   }
   
   stages {
-
     stage('Checkout code and prepare environment.') {
       steps {
         echo "AUTHOR NOTE: Checking out juggergnat/Continuous-Delivery repo."
@@ -54,7 +53,6 @@ pipeline {
         """
       }
     }
-
     // Not from assignment.
     stage('Run nothing here. There is no MASTER branch on juggergnat/UML-SP2024-MSIT.5330-031.') {
       when { branch 'master' }
@@ -62,18 +60,17 @@ pipeline {
         echo 'AUTHOR NOTE: This should not run.'
       }
     }
-
     // From assignment: The CodeCoverage test should only run on the main branch.
     stage('Run pipeline against a gradle project - test MAIN - Code coverage.') {
       when { branch 'main' }
       steps {
         echo 'AUTHOR NOTE: This runs because branch main exists in juggergnat/UML-SP2024-MSIT.5330-031.'
         echo 'Code coverage test on main branch.'
-        // sh """
-        //   cd Chapter08/sample1;
-        //   ./gradlew jacocoTestReport
-        //   ./gradlew jacocoTestCoverageVerification
-        // """
+        sh """
+          cd Chapter08/sample1;
+          ./gradlew jacocoTestReport
+          ./gradlew jacocoTestCoverageVerification
+        """
       }
     }
     // From assignment: All other tests should run in the feature and playground branches.
@@ -87,11 +84,11 @@ pipeline {
       steps {
         echo 'AUTHOR NOTE: This runs because branch feature or playground exists in juggergnat/UML-SP2024-MSIT.5330-031.'
         echo 'Unit test and static code analysis on non-main branch.'
-        // sh """
-        //   cd Chapter08/sample1; 
-        //   ./gradlew test
-        //   ./gradlew checkstyleMain
-        // """
+        sh """
+          cd Chapter08/sample1; 
+          ./gradlew test
+          ./gradlew checkstyleMain
+        """
       }
     }
   }
@@ -99,7 +96,6 @@ pipeline {
   post {
     always   {
       script {
-        echo "Post always script: " + env.BRANCH_NAME
         if ( env.BRANCH_NAME == 'main' ) {
           // Code coverage test report.
           // publishHTML (target: [
@@ -117,85 +113,50 @@ pipeline {
           // ])
         }
       }
-      echo 'End: pipeline completed, yo! Fun fact: Always conditional always runs first.'
+      echo 'Fun fact: The always conditional in post always runs first.'
     }
     success  {
       script {
-        echo "Post success script: " + env.BRANCH_NAME
+        // From assignment: container's name is repository/image:version depending on branch.
         env.CONTAINER_NAME = ''
         if ( env.BRANCH_NAME == 'main' ) {        // Build repository/calculator:1.0.
-          echo "Create container repository/calculator:1.0."
-          env.CONTAINER_REPO = 'repository'
+          env.CONTAINER_REPO = 'repository'       // What should this be?
           env.CONTAINER_NAME = 'calculator:1.0'
         }
         if ( env.BRANCH_NAME == 'feature' ) {     // Build repository/calculator-feature:0.1.
-          echo "Create container repository/calculator-feature:0.1."
-          env.CONTAINER_REPO = 'repository'
+          env.CONTAINER_REPO = 'repository'       // What should this be?
           env.CONTAINER_NAME = 'calculator-feature:0.1'
         }
         if ( env.BRANCH_NAME == 'playground' ) {  // Build nothing. 
           echo "Create no container."
         }
         if ( "${CONTAINER_NAME}" ) {
-                container('gradle') {
-                    sh '''
-                    cd Chapter08/sample1
-                    sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
-                    sed -i '/checkstyle {/,/}/d' build.gradle 
-                    sed -i '/checkstyle/d' build.gradle 
-                    cat build.gradle
-                    chmod +x gradlew
-                    ./gradlew build
-                    mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
-                    '''
-                }
-                container('kaniko') {
-                    sh '''
-                    echo 'FROM openjdk:8-jre' > Dockerfile
-                    echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
-                    echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
-                    mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
-                    /kaniko/executor --context `pwd` --destination juggergnat/hello-kaniko:1.0
-                    '''
-                }
+          echo "Create container ${CONTAINER_REPO}/${CONTAINER_NAME}."
+          echo "QUESTION: Where does ${CONTAINER_REPO}/${CONTAINER_NAME} go?"
+          container('gradle') {
+            sh '''
+              cd Chapter08/sample1
+              sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
+              sed -i '/checkstyle {/,/}/d' build.gradle 
+              sed -i '/checkstyle/d' build.gradle 
+              cat build.gradle
+              chmod +x gradlew
+              ./gradlew build
+              mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
+            '''
+          }
+          container('kaniko') {
+            sh '''
+              echo 'FROM openjdk:8-jre' > Dockerfile
+              echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+              echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+              mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+              /kaniko/executor --context `pwd` --destination juggergnat/hello-kaniko:1.0
+            '''
+          }
         }
       }
       echo 'End: tests pass!'
-/*
-      stages {
-        stage('Build a gradle project') {
-            steps {
-                git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
-                container('gradle') {
-                    sh '''
-                    cd Chapter08/sample1
-                    sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
-                    sed -i '/checkstyle {/,/}/d' build.gradle 
-                    sed -i '/checkstyle/d' build.gradle 
-                    cat build.gradle
-                    chmod +x gradlew
-                    ./gradlew build
-                    mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
-                    '''
-                }
-            }
-        }
-        
-        stage('Build Java Image') {
-            steps {
-                container('kaniko') {
-                    sh '''
-                    echo 'FROM openjdk:8-jre' > Dockerfile
-                    echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
-                    echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
-                    mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
-                    /kaniko/executor --context `pwd` --destination dlambrig/hello-kaniko:1.0
-                    '''
-                }
-            }
-        }
-      }
-*/
     }
     failure  { echo 'End: tests fail!' }
     unstable { echo 'End: run is unstable!' }
