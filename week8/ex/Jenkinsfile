@@ -2,35 +2,83 @@ pipeline {
   agent {
     kubernetes {
       // Define the pod template with container template
-      containerTemplate {
-        name 'gradle'
-        image 'gradle'
-        command 'sleep'
-        args '30d'
-      }
+      // containerTemplate {
+      //   name 'gradle'
+      //   image 'gradle'
+      //   command 'sleep'
+      //   args '30d'
+      // }
+
+      // New k agent from dlambrig/umlS24/blob/main/week8/Jenkins.declarative
+      yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: gradle
+                    image: gradle
+                    command:
+                    - sleep
+                    args:
+                    - 99d
+                    volumeMounts:
+                    - name: shared-storage
+                      mountPath: /mnt        
+                  - name: kaniko
+                    image: gcr.io/kaniko-project/executor:debug
+                    command:
+                    - sleep
+                    args:
+                    - 9999999
+                    volumeMounts:
+                    - name: shared-storage
+                      mountPath: /mnt
+                    - name: kaniko-secret
+                      mountPath: /kaniko/.docker
+                  restartPolicy: Never
+                  volumes:
+                  - name: shared-storage
+                    persistentVolumeClaim:
+                      claimName: jenkins-pv-claim
+                  - name: kaniko-secret
+                    secret:
+                        secretName: dockercred
+                        items:
+                        - key: .dockerconfigjson
+                          path: config.json
+      """
     }
   }
   
   stages {
-    stage('Checkout code and prepare environment') {
+    stage('Checkout code and prepare environment.') {
       steps {
         git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+        echo "AUTHOR NOTE: Checking out juggergnat/Continuous-Delivery repo."
         sh """
           cd Chapter08/sample1
           chmod +x gradlew
         """
       }
     }
+    // Not from assignment: Trying to get my head straight.
+    stage('Run nothing here. Just for testing MASTER branch existence') {
+      when { branch 'master' }
+      steps {
+        echo 'AUTHOR NOTE: Is this testing against my Jenkinsfile repo or the CDD one?'
+      }
+    }
     // From assignment: The CodeCoverage test should only run on the main branch.
     stage('Run pipeline against a gradle project - test MAIN - Code coverage') {
       when { branch 'main' }
       steps {
+        echo 'AUTHOR NOTE: Trying to resolve confusion around which repo the branch sensor is for.'
         echo 'Code coverage test on main branch.'
-        sh """
-          cd Chapter08/sample1;
-          ./gradlew jacocoTestReport
-          ./gradlew jacocoTestCoverageVerification
-        """
+        // sh """
+        //   cd Chapter08/sample1;
+        //   ./gradlew jacocoTestReport
+        //   ./gradlew jacocoTestCoverageVerification
+        // """
       }
     }
     // From assignment: All other tests should run in the feature and playground branches.
@@ -43,11 +91,11 @@ pipeline {
       }
       steps {
         echo 'Unit test and static code analysis on non-main branch.'
-        sh """
-          cd Chapter08/sample1; 
-          ./gradlew test
-          ./gradlew checkstyleMain
-        """
+        // sh """
+        //   cd Chapter08/sample1; 
+        //   ./gradlew test
+        //   ./gradlew checkstyleMain
+        // """
       }
     }
   }
@@ -78,17 +126,56 @@ pipeline {
     success  {
       script {
         echo "Post success script: " + env.BRANCH_NAME
-        // Container should only create on success (main, feature branch, not playground).
-        if ( env.BRANCH_NAME == 'main' ) {
-          // repository/calculator:1.0
-          echo "Create container repository/calculator:1.0"
+        if ( env.BRANCH_NAME == 'main' ) {        // Build repository/calculator:1.0.
+          echo "Create container repository/calculator:1.0."
+          env.CONTAINER_REPO = 'repository'
+          env.CONTAINER_NAME = 'calculator:1.0'
         }
-        if ( env.BRANCH_NAME == 'feature' ) {
-          // repository/calculator-feature:0.1
-          echo "Create container repository/calculator-feature:0.1"
+        if ( env.BRANCH_NAME == 'feature' ) {     // Build repository/calculator-feature:0.1.
+          echo "Create container repository/calculator-feature:0.1."
+          env.CONTAINER_REPO = 'repository'
+          env.CONTAINER_NAME = 'calculator-feature:0.1'
+        }
+        if ( env.BRANCH_NAME == 'playground' ) {  // Build nothing. 
+          echo "Create no container."
         }
       }
       echo 'End: tests pass!'
+/*
+      stages {
+        stage('Build a gradle project') {
+            steps {
+                git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+                container('gradle') {
+                    sh '''
+                    cd Chapter08/sample1
+                    sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
+                    sed -i '/checkstyle {/,/}/d' build.gradle 
+                    sed -i '/checkstyle/d' build.gradle 
+                    cat build.gradle
+                    chmod +x gradlew
+                    ./gradlew build
+                    mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
+                    '''
+                }
+            }
+        }
+        
+        stage('Build Java Image') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                    echo 'FROM openjdk:8-jre' > Dockerfile
+                    echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+                    echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+                    mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+                    /kaniko/executor --context `pwd` --destination dlambrig/hello-kaniko:1.0
+                    '''
+                }
+            }
+        }
+      }
+*/
     }
     failure  { echo 'End: tests fail!' }
     unstable { echo 'End: run is unstable!' }
