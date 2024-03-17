@@ -117,7 +117,7 @@ pipeline {
           // ])
         }
       }
-      echo 'End: pipeline completed, yo!'
+      echo 'End: pipeline completed, yo! Fun fact: Always conditional always runs first.'
     }
     success  {
       script {
@@ -137,13 +137,7 @@ pipeline {
           echo "Create no container."
         }
         if ( "${CONTAINER_NAME}" ) {
-          stages {
-            stage('Will it blend?') {
-              steps {
-                echo 'Blend'
-              }
-            }
-          }
+          echo 'Blend.'
         }
         else {
           echo 'Do not blend.'
