@@ -136,11 +136,20 @@ pipeline {
         if ( env.BRANCH_NAME == 'playground' ) {  // Build nothing. 
           echo "Create no container."
         }
+        if ( "${CONTAINER_NAME}" ) {
+          stages {
+            stage('Will it blend?') {
+              steps {
+                echo 'Blend'
+              }
+            }
+          }
+        }
+        else {
+          echo 'Do not blend.'
+        }
       }
       echo 'End: tests pass!'
-      if ( 1 ) {
-        echo 'End: ' + "${CONTAINER_NAME}"
-      }
 /*
       stages {
         stage('Build a gradle project') {
