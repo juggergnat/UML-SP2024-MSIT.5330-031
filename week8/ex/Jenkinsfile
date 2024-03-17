@@ -137,7 +137,7 @@ pipeline {
           echo "Create no container."
         }
         if ( "${CONTAINER_NAME}" ) {
-          echo 'Blend.'
+          echo 'Blend. ' + "${CONTAINER_NAME}"
         }
         else {
           echo 'Do not blend.'
