@@ -116,23 +116,15 @@ pipeline {
       echo 'Fun fact: The always conditional in post always runs first.'
     }
     success  {
+      // From assignment: Container should only create on success.
       script {
         // From assignment: container's name is repository/image:version depending on branch.
         env.CONTAINER_NAME = ''
-        if ( env.BRANCH_NAME == 'main' ) {        // Build repository/calculator:1.0.
-          env.CONTAINER_REPO = 'repository'       // What should this be?
-          env.CONTAINER_NAME = 'calculator:1.0'
-        }
-        if ( env.BRANCH_NAME == 'feature' ) {     // Build repository/calculator-feature:0.1.
-          env.CONTAINER_REPO = 'repository'       // What should this be?
-          env.CONTAINER_NAME = 'calculator-feature:0.1'
-        }
-        if ( env.BRANCH_NAME == 'playground' ) {  // Build nothing. 
-          echo "Create no container."
-        }
+        env.CONTAINER_REPO = 'juggergnat'
+        if ( env.BRANCH_NAME == 'main' )       { env.CONTAINER_NAME = 'calculator:1.0' }
+        if ( env.BRANCH_NAME == 'feature' )    { env.CONTAINER_NAME = 'calculator-feature:0.1' }
+        if ( env.BRANCH_NAME == 'playground' ) { echo "Create no container." }
         if ( "${CONTAINER_NAME}" ) {
-          // echo "Create container ${CONTAINER_REPO}/${CONTAINER_NAME}."
-          // echo "QUESTION: Where does ${CONTAINER_REPO}/${CONTAINER_NAME} go?"
           container('gradle') {
             sh '''
               cd Chapter08/sample1
@@ -145,13 +137,13 @@ pipeline {
               mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
             '''
           }
-          container("kaniko/${CONTAINER_NAME}") {
+          container('kaniko') {
             sh '''
               echo 'FROM openjdk:8-jre' > Dockerfile
               echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
               echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
               mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
-              /kaniko/executor --context `pwd` --destination juggergnat/hello-kaniko:1.0
+              /kaniko/executor --context `pwd` --destination ${CONTAINER_REPO}/${CONTAINER_NAME}
             '''
           }
         }
