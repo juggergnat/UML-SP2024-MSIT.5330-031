@@ -1,0 +1,33 @@
+Jenkins > Dashboard > Manage Jenkins > Plugins > Available Plugins
+http://localhost:32000/manage/pluginManager/available
+	1. Kubernetes Version 4203.v1dd44f5b_1cf9
+	2. HTML Publisher plugin
+	3. Multibranch Scan Webhook Trigger
+	4. Job and Stage monitoring (github-autostatus)
+	5. (optional) Wait for all parts to download and restart
+
+Jenkins > Dashboard > Manage Jenkins > Clouds: New cloud
+http://localhost:32000/manage/cloud/new
+	name: UML
+	k namespace: devops-tools
+	j url: http://jenkins-service.devops-tools.svc.cluster.local:8080
+	pod label: key=jenkins value=agent
+
+Jenkins > Dashboard > Manage Jenkins > Clouds: uml > Pod Templates > Add
+http://localhost:32000/manage/cloud/UML/new
+	name: kube-agent
+	namespace: devops-tools
+	labels: kubeagent
+	container template name: jnlp
+	docker image: jenkins/inbound-agent:latest
+	command to run: [empty]
+	arguments to pass to the command: [empty]
+	pod retention: always
+
+Jenkins > Dashboard > Manage Jenkins > Credentials > (global): Add credentials
+http://localhost:32000/manage/credentials/store/system/domain/_/newCredentials
+
+Make pipeline: Jenkins > Dashboard > New item: Week9-Ex-01a as Pipeline
+http://localhost:32000/view/all/newJob
+	Advanced: Display Name: Week9-Ex-01a
+	Jenkinsfile
