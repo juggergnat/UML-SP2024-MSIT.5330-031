@@ -1,0 +1,51 @@
+setopt interactive_comments
+
+cd ~/Files/devops/github/UML-SP2024-MSIT.5330-031 
+git checkout main && git pull
+
+cd ~/Files/devops/S24/umlS24
+git checkout main && git pull
+
+open -a "Docker Desktop"
+# and wait until Kubernetes goes from orange to green.
+
+kubectl create namespace devops-tools 
+
+read -r DUSER DPASS DEMAIL < <(cat ~/Files/devops/.dockerhub)
+kubectl create secret docker-registry dockercred \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username=$DUSER --docker-password=$DPASS --docker-email=$DEMAIL \
+  --namespace devops-tools
+
+read -r WHRKEY WHRSEC < <(cat ~/Files/devops/.whr)
+kubectl create secret generic whr-credentials \
+    --from-literal=key=$WHRKEY \
+    --from-literal=secret=$WHRSEC \
+    --namespace devops-tools
+
+cd ~/Files/devops/github/UML-SP2024-MSIT.5330-031 
+
+kubectl apply -f week8/jenkins-pvc.yaml -n devops-tools
+kubectl apply -f week8/jenkins-full-deployment.yaml -n devops-tools
+
+kubectl apply -f week8/hazelcast.yaml  
+kubectl apply -f week8/calculator.yaml 
+
+# Expect 11 containers
+
+kubectl create role pod-reader --verb=get --verb=list --verb=watch \
+  --resource=pods,services,deployments
+
+kubectl create rolebinding default-pod-reader --role=pod-reader \
+   --serviceaccount=default:default --namespace=default
+
+kubectl create clusterrolebinding permissive-binding \
+  --clusterrole=cluster-admin \
+  --user=admin-root-u1 \
+  --user=kubelet \
+  --group=system:serviceaccounts:devops-tools
+
+PODID=`kubectl get pod -n devops-tools -o custom-columns=":metadata.name" --no-headers=true`
+kubectl logs "$PODID" -n devops-tools | grep -A2 "use the following password"
+
+open http://localhost:32000
