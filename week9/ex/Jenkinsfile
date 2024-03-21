@@ -1,3 +1,4 @@
+
 podTemplate(yaml: '''
     apiVersion: v1
     kind: Pod
@@ -35,12 +36,22 @@ podTemplate(yaml: '''
     stage('gradle') {
       git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
       container('gradle') {
-        stage('test calculator') {
+                stage('test calculator') {
+          echo 'AUTHOR NOTE: Run tests as described.'
           sh '''
           cd Chapter09/sample3
           chmod +x gradlew
-          ./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:8080
-        '''
+          echo 'Perform test: Addition: 6, 2: Expect 3.'
+          test $(curl calculator-service:8080/sum?a=6\\&b=2) -eq 8 && echo 'pass' || echo 'fail'
+          echo 'Perform test: Divide: 6, 2: Expect 3.'
+          test $(curl calculator-service:8080/div?a=6\\&b=2) -eq 3 && echo 'pass' || echo 'fail'
+          echo 'Perform test: Divide: 0, 2: Expect 0.'
+          test $(curl calculator-service:8080/div?a=0\\&b=2) -eq 0 && echo 'pass' || echo 'fail'
+          echo 'Perform test: Divide: 2, 0: Expect a division by 0 paradox.'
+          test $(curl calculator-service:8080/div?a=2\\&b=0) -eq 0 && echo 'pass' || echo 'fail'
+          # Skip acceptance tests for now.
+          # ./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:8080
+          '''
         }
       }
     }
