@@ -1,0 +1,39 @@
+setopt interactive_comments
+
+cd ~/Files/devops/github/UML-SP2024-MSIT.5330-031 
+git checkout main && git pull
+
+cd ~/Files/devops/S24/umlS24
+git checkout main && git pull
+
+open -a "Docker Desktop"
+# and wait until Kubernetes goes from orange to green.
+
+kubectl apply -f week8/hazelcast.yaml
+kubectl apply -f week8/calculator.yaml
+
+karenann:~/Files/devops/S24/umlS24 % kubectl get service
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+calculator-service   NodePort    10.xx.xx.232     <none>        8080:30744/TCP   6d2h
+hazelcast            ClusterIP   10.xx.xx.146     <none>        5701/TCP         6d2h
+kubernetes           ClusterIP   10.xx.xx.1       <none>        443/TCP          62d
+
+curl "http://localhost:30744/sum?a=3&b=4"
+
+kubectl run gradle-week9 -it --image=gradle:jdk8 -- /bin/bash
+
+git clone https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git
+
+cd Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition
+cd Chapter09/sample3/
+
+chmod +x gradlew
+
+# No. Not this.
+# ./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:30744
+
+./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:8080
+
+exit
+
+# Garbage collect.

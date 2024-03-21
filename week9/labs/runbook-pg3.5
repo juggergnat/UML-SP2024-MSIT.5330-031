@@ -1,0 +1,29 @@
+kubectl create role app-deployer --verb=get --verb=list --verb=watch \
+  --verb=create --verb=update --verb=patch --verb=delete \
+  --resource=pods,services,deployments
+
+kubectl create rolebinding default-app-deployer --role=app-deployer \
+   --serviceaccount=default:default --namespace=default
+
+kubectl run --rm -it --image=centos -- bash
+
+# Test lab 1 page 2.
+ls -al /var/run/secrets/kubernetes.io/serviceaccount/token
+ls -al /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+URL="${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}" && echo $URL
+curl -ik -H \
+  "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+    https://$URL/api/v1/namespaces/default/pods
+
+# Test lab 1 page 3.
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+chmod +x ./kubectl
+
+curl -k -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" https://kubernetes.default.svc.cluster.local/apis/apps/v1/namespaces/default/deployments -XPOST -H "Content-type: application/yaml" --data-binary @calculator.yaml
+
+###################
+#
+# Warning: Couldn't read data from file "calculator.yaml", this makes an empty 
+# Warning: POST.
+# ... { ... "message": "Deployment.apps \"\" is invalid: ... " ... } ...

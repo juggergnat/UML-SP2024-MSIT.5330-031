@@ -1,0 +1,43 @@
+setopt interactive_comments
+
+cd ~/Files/devops/github/UML-SP2024-MSIT.5330-031 
+git checkout main && git pull
+
+cd ~/Files/devops/S24/umlS24
+git checkout main && git pull
+
+open -a "Docker Desktop"
+# and wait until Kubernetes goes from orange to green.
+
+kubectl apply -f week8/hazelcast.yaml
+kubectl apply -f week8/calculator.yaml
+
+kubectl create role pod-reader --verb=get --verb=list --verb=watch \
+  --resource=pods,services,deployments
+
+kubectl create rolebinding default-pod-reader --role=pod-reader \
+   --serviceaccount=default:default --namespace=default
+
+kubectl get service
+# Notice calculator-service as KUBERNETES_SERVICE_HOST
+# Notice calculator-service port at KUBRNETES_SERVICE_PORT
+
+kubectl run --rm -it --image=centos -- bash
+
+ls -al /var/run/secrets/kubernetes.io/serviceaccount/token
+ls -al /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+URL="${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}"
+
+curl -ik -H \
+  "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+    https://$URL/api/v1/namespaces/default/pods
+
+exit
+
+kubectl delete rolebinding default-pod-reader
+kubectl delete role pod-reader
+kubectl delete deployment --all
+kubectl delete all --all
+
+osascript -e 'quit app "Docker Desktop"'
