@@ -1,0 +1,56 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: centos
+            image: centos
+            command:
+            - sleep
+            args:
+            - 99d
+          - name: gradle
+            image: gradle:jdk8
+            command:
+            - sleep
+            args:
+            - 99d
+          restartPolicy: Never
+      """
+    }
+  }
+  stages {
+    stage('start a calculator') {
+      steps {
+        git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+        container('centos') {
+          sh '''
+            cd Chapter08/sample1
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            ./kubectl apply -f calculator.yaml
+            ./kubectl apply -f hazelcast.yaml
+          '''
+        }
+      }
+    }
+  }
+  post {
+    always {
+      // AUTHOR NOTE: Previous changes to named containers persist. Neat.
+      // AUTHOR NOTE: Environment variables in named containers do not. That's fine.
+      container('centos') { 
+        sh '''
+          cd Chapter08/sample1
+          DEP_1=`./kubectl get deployment -o custom-columns=":metadata.name" --no-headers=true -l app=calculator`
+          DEP_2=`./kubectl get deployment -o custom-columns=":metadata.name" --no-headers=true -l app=hazelcast`
+          [[ ! -z "$DEP_1" ]] && ./kubectl delete deployment $DEP_1 || echo "Cannot delete calculator."
+          [[ ! -z "$DEP_2" ]] && ./kubectl delete deployment $DEP_2 || echo "Cannot delete hazelcast."
+        '''
+      }
+    }
+  }
+}
