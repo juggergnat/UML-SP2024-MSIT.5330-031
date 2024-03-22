@@ -1,0 +1,91 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: centos
+            image: centos
+            command:
+            - sleep
+            args:
+            - 99d
+          - name: gradle
+            image: gradle:jdk8
+            command:
+            - sleep
+            args:
+            - 99d
+          restartPolicy: Never
+      """
+    }
+  }
+  stages {
+    stage('start a calculator') {
+      steps {
+        git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+        container('centos') {
+          sh '''
+            cd Chapter08/sample1
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            ./kubectl apply -f calculator.yaml
+            ./kubectl apply -f hazelcast.yaml
+          '''
+        }
+      }
+    }
+    stage('test calculator') {
+      steps {
+        git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+        container('gradle') {
+          sh '''
+            cd Chapter09/sample3
+            chmod +x gradlew
+            test $(curl calculator-service:8080/sum?a=6\\&b=2) -eq 8 \
+              && echo 'Test 1: Pass. Addition. 6 + 2 = 8.' \
+              || echo 'Test 1: Fail. Addition. 6 + 2 ≠ 8.'
+            test $(curl calculator-service:8080/div?a=6\\&b=2) -eq 3 \
+              && echo 'Test 2: Pass. Division. 6 / 2 = 3.' \
+              || echo 'Test 2: Fail. Division. 6 / 2 ≠ 3.'
+            test $(curl calculator-service:8080/div?a=0\\&b=2) -eq 0 \
+              && echo 'Test 3: Pass. Division. 0 / 2 = 0.' \
+              || echo 'Test 3: Fail. Division. 0 / 2 ≠ 0.'
+            test $(curl calculator-service:8080/div?a=2\\&b=0) -eq 0 \
+              && echo 'Test 3: Pass. Division by 0 captured and prevented.' \
+              || echo 'Test 3: Fail. Division by 0 not handled.'
+            # Skip acceptance tests for now.
+            # ./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:8080
+          '''
+        }
+      }
+    }
+  }
+  post {
+    always {
+      // AUTHOR NOTE: Previous changes to named containers persist. Neat.
+      // AUTHOR NOTE: Environment variables in named containers do not. That's fine.
+      container('centos') { 
+        sh '''
+          cd Chapter08/sample1
+          DEP_1=`./kubectl get deployment -o custom-columns=":metadata.name" --no-headers=true -l app=calculator`
+          DEP_2=`./kubectl get deployment -o custom-columns=":metadata.name" --no-headers=true -l app=hazelcast`
+          [[ ! -z "$DEP_1" ]] && ./kubectl delete deployment $DEP_1 || echo "Cannot delete calculator."
+          [[ ! -z "$DEP_2" ]] && ./kubectl delete deployment $DEP_2 || echo "Cannot delete hazelcast."
+        '''
+      }
+    }
+  }
+}
+
+// Motherforking snippets for sumbish testing.
+//
+// ./kubectl port-forward service/calculator-service 8080:8080 2>&1 >/dev/null &
+// curl calculator-service:8080/sum?a=6\\&b=2
+// curl localhost:8080/sum?a=6\\&b=2
+// FFS=`./kubectl describe service calculator-service -n devops-tools | grep NodePort | awk '{print $3}' | cut -d'/' -f1 | tr -d '[:space:]'`
+// curl calculator-service:$FFS/sum?a=6\\&b=2
+// ./kubectl create role pod-reader --verb=get --verb=list --verb=watch --resource=pods,services,deployments
+// ./kubectl create rolebinding default-pod-reader --role=pod-reader --serviceaccount=default:default --namespace=devops-tools 
