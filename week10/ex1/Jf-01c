@@ -1,0 +1,53 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: cloud-sdk
+            image: google/cloud-sdk:latest
+            command:
+            - sleep
+            args:
+            - 9999999
+            volumeMounts:
+            - name: shared-storage
+              mountPath: /mnt
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+            env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/[[[`cat ~/Files/devops/.sdkkey`]]]
+            - name: GOOGLE_PROJECT
+              value: [[[`cat ~/Files/devops/.sdkproj`]]]
+          restartPolicy: Never
+          volumes:
+          - name: shared-storage
+            persistentVolumeClaim:
+              claimName: jenkins-pv-claim
+          - name: google-cloud-key
+            secret:
+              secretName: sdk-key          
+      """
+    }
+  }
+  stages {
+    stage('Staging environment pipeline.') {
+      steps {
+        echo "AUTHOR NOTE: Conditional only needed if webhook required."
+        echo "AUTHOR NOTE: Which repository should I be downloading?"
+        git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+        sh """
+          cd Chapter08/sample1
+          chmod +x gradlew
+          echo 'AUTHOR NOTE: Trigger rolling upgrade here.'
+          echo '  E.g. kubectl apply -f calculator.yaml'
+          echo '  E.g. kubectl get pods -w # but this wont break itself. consider wait command?'
+          echo 'AUTHOR NOTE: Do not recompile or build new image.'
+        """
+      }
+    }
+  }
+}
