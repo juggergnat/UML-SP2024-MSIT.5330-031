@@ -34,19 +34,26 @@ pipeline {
     }
   }
   stages {
-    stage('Staging environment pipeline.') {
+    stage('Exercise 10.1: Staging environment pipeline.') {
       steps {
         echo "AUTHOR NOTE: Conditional only needed if webhook required."
         echo "AUTHOR NOTE: Which repository should I be downloading?"
+        echo "AUTHOR NOTE: Default shell is sh, not bash. Set in Manage Jenkins > System > Shell executable: /bin/bash"
         git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
-        sh """
+        sh '''
           cd Chapter08/sample1
-          chmod +x gradlew
-          echo 'AUTHOR NOTE: Trigger rolling upgrade here.'
-          echo '  E.g. kubectl apply -f calculator.yaml'
-          echo '  E.g. kubectl get pods -w # but this wont break itself. consider wait command?'
-          echo 'AUTHOR NOTE: Do not recompile or build new image.'
-        """
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          ./kubectl version
+          echo "AUTHOR NOTE: Test for differences. This command returns a JSON of differences but my care is boolean."
+          DIFF=`./kubectl diff -f calculator.yaml | head -c1`
+          echo "$DIFF" 
+          [[ -z "$DIFF" ]] && echo "No changes detected" || echo "Trigger rolling upgrade here."
+          [[ ! -z "$DIFF" ]] && echo "./kubectl apply -f calculator.yaml"
+          [[ ! -z "$DIFF" ]] && echo "./kubectl get pods --watch=false"
+          echo "AUTHOR NOTE: Do not recompile or build new image."
+        '''
+
       }
     }
   }
