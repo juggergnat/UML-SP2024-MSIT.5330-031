@@ -41,11 +41,11 @@ pipeline {
         echo "AUTHOR NOTE: Default shell is sh, not bash. Set in Manage Jenkins > System > Shell executable: /bin/bash"
         git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
         sh '''
-          cd Chapter08/sample1
+          cd Week10/ex1
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           ./kubectl version
-          echo "AUTHOR NOTE: Test for differences. This command returns a JSON of differences but my care is boolean."
+          echo "AUTHOR NOTE: Test for differences. This command returns a JSON of differences (where present)."
           DIFF=`./kubectl diff -f calculator.yaml | head -c1`
           echo "$DIFF" 
           [[ -z "$DIFF" ]] && echo "No changes detected" || echo "Trigger rolling upgrade here."
