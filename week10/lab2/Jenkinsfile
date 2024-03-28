@@ -16,7 +16,7 @@ podTemplate(yaml: '''
           mountPath: /var/secrets/google
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: [[[`cat ~/Files/devops/.sdkkey`]]]
+          value: /var/secrets/google/[[[`cat ~/Files/devops/.sdkkey`]]]
         - name: GOOGLE_PROJECT
           value: [[[`cat ~/Files/devops/.sdkproj`]]]
       restartPolicy: Never
