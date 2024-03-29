@@ -36,24 +36,21 @@ pipeline {
   stages {
     stage('Exercise 10.1: Staging environment pipeline.') {
       steps {
-        echo "AUTHOR NOTE: Conditional only needed if webhook required."
-        echo "AUTHOR NOTE: Which repository should I be downloading?"
-        echo "AUTHOR NOTE: Default shell is sh, not bash. Set in Manage Jenkins > System > Shell executable: /bin/bash"
+        echo "AUTHOR NOTE: Webhook not configured. Conditional will apply if webhook configured."
+        echo "AUTHOR NOTE: Do not recompile or build new image."
         git url: 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
         sh '''
           cd Week10/ex1
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           ./kubectl version
-          echo "AUTHOR NOTE: Test for differences. This command returns a JSON of differences (where present)."
+          echo "AUTHOR NOTE: Test for differences. Diff returns a JSON, where present. We only need YES or NO."
           DIFF=`./kubectl diff -f calculator.yaml | head -c1`
-          echo "$DIFF" 
-          [[ -z "$DIFF" ]] && echo "No changes detected" || echo "Trigger rolling upgrade here."
-          [[ ! -z "$DIFF" ]] && echo "./kubectl apply -f calculator.yaml"
-          [[ ! -z "$DIFF" ]] && echo "./kubectl get pods --watch=false"
-          echo "AUTHOR NOTE: Do not recompile or build new image."
+          [[ -z "$DIFF" ]] && echo "No changes detected. Take no action." || echo "Changes detected. Take action."
+          [[ ! -z "$DIFF" ]] && ./kubectl apply -f calculator.yaml || :
+          [[ ! -z "$DIFF" ]] && ./kubectl get pods && sleep 2 && ./kubectl get pod && sleep 2 || :
+          ./kubectl get pod
         '''
-
       }
     }
   }
