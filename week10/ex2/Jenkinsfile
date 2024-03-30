@@ -62,7 +62,7 @@ pipeline {
   stages {
     stage('Test stage 1: Wiil it blend?') {
       steps {
-        sh '''
+        sh ''' 
           # curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           # chmod +x ./kubectl
           # ./kubectl get ns
@@ -82,14 +82,34 @@ pipeline {
         }
       }
     }
-    stage('Required stage 2: Start the calculator and hazelcast in GKE.') {
+    stage('Deploy to GKE') {
       steps {
-        sh '''
-          echo "From the Labbbby lab lab:"
-          echo "To start using the GKE cluster, you must switch your context:"
-          echo "  # kubectl config use-context [cluster]"
-          echo "Okay, but what now?"
-        '''
+        echo "AUTHOR NOTE: Required stage 2: Start the calculator and hazelcast in GKE."
+        container('cloud-sdk') {
+          sh '''
+            cd Week10/ex2
+            echo 'Show namespaces in the staging environment' && kubectl get ns
+            echo 'Show default gcloud project'                && gcloud config get project
+            gcloud config set project $GOOGLE_PROJECT
+            gcloud auth login --cred-file=$GOOGLE_APPLICATION_CREDENTIALS --no-launch-browser
+            gcloud container clusters get-credentials hello-cluster --region us-central1 --project $GOOGLE_PROJECT
+            GOOGLE_CLUSTER=`kubectl config get-clusters | grep hello-cluster`
+            [[ ! -z "$GOOGLE_CLUSTER" ]] \
+              && kubectl config use-context $GOOGLE_CLUSTER \
+              || echo "Could not find target cluster and error handling at the level is out of scope."
+            echo 'Show namespaces in the prod environment'    && kubectl get ns
+            echo 'Show pods in the prod environment'.         && kubectl get ns
+            GOOGLE_CLUSTER_NS=`kubectl get ns | grep devops-tools-production | awk '{print $1}'`
+            [[ -z "$GOOGLE_CLUSTER_NS" ]] \
+              && kubectl create namespace devops-tools-production \
+              || echo "Target namespace exists $GOOGLE_CLUSTER_NS"
+            kubectl apply -f hazelcast.yaml  -n devops-tools-production  && sleep 1
+            kubectl apply -f calculator.yaml -n devops-tools-production  && sleep 1
+            kubectl get pods -n devops-tools-production
+            sleep 10
+            kubectl get pods -n devops-tools-production
+          '''
+        }
       }
     }
   }
