@@ -27,12 +27,31 @@ pipeline {
         }
       }
     }
-    stage('TBD') {
+    stage('Required stage 1: Test the staging environment in my local kubernetes cluster.') {
       steps {
         sh '''
-          echo "tbd"
+          echo "./gradlew smokeTest -Dcalculator.url=http://calculator-service.staging.svc.cluster.local:8080"
+      }
+    }
+    stage('Required stage 2: Start the calculator and hazelcast in GKE.') {
+      steps {
+        sh '''
+          echo "From the Labbbby lab lab:"
+          echo "To start using the GKE cluster, you must switch your context:"
+          echo "  # kubectl config use-context [cluster]"
+          echo "Okay, but what now?"
         '''
       }
     }
+  }
+  post {
+    always {
+      echo 'FUN FACT: The always conditional in post always runs first before other conditionals.'
+      echo 'Immona do my garbage collection here.'
+    }
+    success  { echo 'End: success!'  }
+    failure  { echo 'End: failure!'  }
+    unstable { echo 'End: unstable!' }
+    changed  { echo 'End: changed!'  }
   }
 }
