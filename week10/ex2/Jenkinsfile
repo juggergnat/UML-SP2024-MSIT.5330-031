@@ -1,26 +1,12 @@
 pipeline {
   agent {
     kubernetes {
-      yaml """
-        apiVersion: v1
-        kind: Pod
-        spec:
-         containers:
-         - name: gradle
-          image: gradle
-          command:
-          - sleep
-          args:
-          - 99d
-          volumeMounts:
-          - name: shared-storage
-           mountPath: /mnt    
-         restartPolicy: Never
-         volumes:
-         - name: shared-storage
-          persistentVolumeClaim:
-           claimName: jenkins-pv-claim
-      """
+      containerTemplate {
+        name 'gradle'
+        image 'gradle'
+        command 'sleep'
+        args '30d'
+      }
     }
   }
   stages {
