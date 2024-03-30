@@ -30,9 +30,9 @@ pipeline {
     }
   }
   stages {
-    stage('Build a gradle project') {
+    stage('Build a gradle project but not really') {
       steps {
-        git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+        git 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
         container('gradle') {
           sh '''
           cd Chapter08/sample1
@@ -41,7 +41,7 @@ pipeline {
           sed -i '/checkstyle/d' build.gradle 
           cat build.gradle
           chmod +x gradlew
-          ./gradlew build
+          echo "./gradlew build"
           echo "mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt"
           '''
         }
