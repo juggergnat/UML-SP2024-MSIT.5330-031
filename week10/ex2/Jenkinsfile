@@ -1,28 +1,86 @@
 pipeline {
   agent {
     kubernetes {
-      containerTemplate {
-        name 'gradle'
-        image 'gradle'
-        command 'sleep'
-        args '30d'
-      }
+      yaml """
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: cloud-sdk
+            image: google/cloud-sdk:latest
+            command:
+            - sleep
+            args:
+            - 9999999
+            volumeMounts:
+            - name: shared-storage
+              mountPath: /mnt
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+            env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/[[[`cat ~/Files/devops/.sdkkey`]]]
+            - name: GOOGLE_PROJECT
+              value: [[[`cat ~/Files/devops/.sdkproj`]]]
+          - name: gradle
+            image: gradle
+            command:
+            - sleep
+            args:
+            - 99d
+            volumeMounts:
+            - name: shared-storage
+              mountPath: /mnt        
+          - name: kaniko
+            image: gcr.io/kaniko-project/executor:debug
+            command:
+            - sleep
+            args:
+            - 9999999
+            volumeMounts:
+            - name: shared-storage
+              mountPath: /mnt
+            - name: kaniko-secret
+              mountPath: /kaniko/.docker
+          restartPolicy: Never
+          volumes:
+          - name: shared-storage
+            persistentVolumeClaim:
+              claimName: jenkins-pv-claim
+          - name: google-cloud-key
+            secret:
+              secretName: sdk-key
+          - name: kaniko-secret
+            secret:
+                secretName: dockercred
+                items:
+                - key: .dockerconfigjson
+                  path: config.json
+      """
     }
   }
   stages {
+    stage('Test stage 1: Wiil it blend?') {
+      steps {
+        sh '''
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          ./kubectl get ns
+       '''
+      }
+    }
     stage('Build a gradle project but not really') {
       steps {
         git 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
         container('gradle') {
           sh '''
-          cd Chapter08/sample1
-          sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
-          sed -i '/checkstyle {/,/}/d' build.gradle 
-          sed -i '/checkstyle/d' build.gradle 
-          cat build.gradle
-          chmod +x gradlew
-          echo "./gradlew build"
-          echo "mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt"
+          # cd Chapter08/sample1
+          # sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
+          # sed -i '/checkstyle {/,/}/d' build.gradle 
+          # sed -i '/checkstyle/d' build.gradle 
+          # cat build.gradle
+          # chmod +x gradlew
+          # echo "./gradlew build"
           '''
         }
       }
