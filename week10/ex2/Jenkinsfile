@@ -20,12 +20,6 @@ pipeline {
          - name: shared-storage
           persistentVolumeClaim:
            claimName: jenkins-pv-claim
-         - name: kaniko-secret
-          secret:
-            secretName: dockercred
-            items:
-            - key: .dockerconfigjson
-             path: config.json
       """
     }
   }
@@ -49,6 +43,9 @@ pipeline {
     }
     stage('TBD') {
       steps {
+        sh '''
+          echo "tbd"
+        '''
       }
     }
   }
