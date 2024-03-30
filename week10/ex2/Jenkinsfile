@@ -30,7 +30,7 @@ pipeline {
             - 99d
             volumeMounts:
             - name: shared-storage
-              mountPath: /mnt        
+              mountPath: /mnt
           - name: kaniko
             image: gcr.io/kaniko-project/executor:debug
             command:
@@ -63,33 +63,23 @@ pipeline {
     stage('Test stage 1: Wiil it blend?') {
       steps {
         sh '''
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          ./kubectl get ns
-       '''
+          # curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          # chmod +x ./kubectl
+          # ./kubectl get ns
+        '''
       }
     }
-    stage('Build a gradle project but not really') {
+    stage('Smoke test') {
       steps {
+        echo "AUTHOR NOTE: Required stage 1: Test the staging environment in my local kubernetes cluster."
         git 'https://github.com/juggergnat/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
         container('gradle') {
           sh '''
-          # cd Chapter08/sample1
-          # sed -i 's/minimum = 0.2/minimum = 0.1/' build.gradle
-          # sed -i '/checkstyle {/,/}/d' build.gradle 
-          # sed -i '/checkstyle/d' build.gradle 
-          # cat build.gradle
-          # chmod +x gradlew
-          # echo "./gradlew build"
+            cd Chapter08/sample1
+            chmod +x ./gradlew
+            ./gradlew smokeTest -Dcalculator.url=http://calculator-service.staging.svc.cluster.local:8080
           '''
         }
-      }
-    }
-    stage('Required stage 1: Test the staging environment in my local kubernetes cluster.') {
-      steps {
-        sh '''
-          echo "./gradlew smokeTest -Dcalculator.url=http://calculator-service.staging.svc.cluster.local:8080"
-        '''
       }
     }
     stage('Required stage 2: Start the calculator and hazelcast in GKE.') {
