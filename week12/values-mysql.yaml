@@ -9,5 +9,5 @@ serviceMonitor:
     release: MYREL
   spec:
     targets:
-      - name: mongodb
-        port: 9216
+      - name: mysql
+        port: 9104
