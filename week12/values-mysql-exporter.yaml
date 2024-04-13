@@ -1,0 +1,13 @@
+mysql:
+  host: "localhost"
+  pass: "mypassmyword"
+  port: 3306
+  user: "mysqladmadm"
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: kube-prometheus-stack-1713020637
+  spec:
+    targets:
+      - name: mysql
+        port: 9104
