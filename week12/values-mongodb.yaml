@@ -3,7 +3,7 @@ mongodb:
 serviceMonitor:
   enabled: true
   additionalLabels:
-    release: kube-prometheus-stack-1711919656
+    release: MYREL
   spec:
     targets:
       - name: mongodb
