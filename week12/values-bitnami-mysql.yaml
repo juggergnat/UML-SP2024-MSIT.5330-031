@@ -1,0 +1,12 @@
+auth:
+  rootPassword: "MYPASSMYPASS"
+  username: "MYUSER"
+  password: "MYPASS"
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: MYREL
+  spec:
+    targets:
+      - name: mysql
+        port: 9104
