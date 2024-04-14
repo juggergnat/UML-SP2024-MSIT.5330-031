@@ -1,7 +1,7 @@
 mysql:
   host: "localhost"
   pass: "MYPASS"
-  port: 3306
+  port: MYPORT
   user: "MYUSER"
 serviceMonitor:
   enabled: true
@@ -10,4 +10,4 @@ serviceMonitor:
   spec:
     targets:
       - name: mysql
-        port: 9104
+        port: MYPORT
