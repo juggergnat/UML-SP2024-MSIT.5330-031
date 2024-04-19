@@ -1,5 +1,5 @@
 mongodb:
-  uri: "mongodb://mongodb-service:27017"
+  uri: "mongodb://mongodb-service:MYPORT"
 serviceMonitor:
   enabled: true
   additionalLabels:
