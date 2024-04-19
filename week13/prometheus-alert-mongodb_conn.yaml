@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: MYAPP
+    release: MYREL
+  name: example-rule
+spec:
+  groups:
+  - name: example-rule
+    rules:
+    - alert: example-alert
+      annotations:
+        description: Memory on node {{ $labels.instance }} currently at {{ $value }}% 
+          is under pressure
+        summary: Memory usage is under pressure, system may become unstable.
+      expr: MYRULE
+      for: 2m
+      labels:
+        severity: warning
+
