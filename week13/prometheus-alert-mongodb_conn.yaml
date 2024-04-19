@@ -4,16 +4,16 @@ metadata:
   labels:
     app: MYAPP
     release: MYREL
-  name: example-rule
+  name: example-rule-mongodb-conn
 spec:
   groups:
-  - name: example-rule
+  - name: example-rule-mongodb-conn
     rules:
-    - alert: example-alert
+    - alert: example-alert-mongodb-comm
       annotations:
-        description: Memory on node {{ $labels.instance }} currently at {{ $value }}% 
+        description: Connections on MongoDB {{ $labels.instance }} currently at {{ $value }}% 
           is under pressure
-        summary: Memory usage is under pressure, system may become unstable.
+        summary: MongoDB connections exerting pressure, system may become unstable.
       expr: MYRULE
       for: 2m
       labels:
