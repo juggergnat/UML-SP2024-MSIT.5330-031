@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: MYAPP
+    release: MYREL
+  name: example-rule-mongodb-conn
+spec:
+  groups:
+  - name: example-rule-mongodb-conn
+    rules:
+    - alert: example-alert-mongodb-conn
+      annotations:
+        description: Connections on MongoDB {{ $labels.instance }} currently at {{ $value }} 
+          and is creating pressure.
+        summary: MongoDB connections exerting pressure, system may become unstable.
+      expr: MYRULE
+      for: 2m
+      labels:
+        severity: warning
+
